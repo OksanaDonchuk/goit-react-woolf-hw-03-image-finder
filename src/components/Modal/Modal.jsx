@@ -3,36 +3,36 @@ import css from './Modal.module.css';
 
 class Modal extends Component {
   componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
+    document.documentElement.style.overflowY = 'hidden';
+    window.addEventListener('keydown', this.handlePressKey);
   }
-
   componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
+    document.documentElement.style.overflowY = '';
+    window.removeEventListener('keydown', this.handlePressKey);
   }
 
-  handleKeyDown = e => {
-    if (e.code === 'Escape') {
-      this.props.onClose();
+  handleClickOverlay = evn => {
+    if (evn.target !== evn.currentTarget) {
+      return;
     }
+    this.props.onClose();
   };
 
-  handleBackdropClick = e => {
-    if (e.currentTarget === e.target) {
-      this.props.onClose();
+  handlePressKey = evn => {
+    if (evn.key !== 'Escape') {
+      return;
     }
+    this.props.onClose();
   };
 
   render() {
-    const { largeImageURL } = this.props;
-
     return (
-      <div className={css.overlay} onClick={this.handleBackdropClick}>
+      <div className={css.overlay} onClick={this.handleClickOverlay}>
         <div className={css.modal}>
-          <img src={largeImageURL} alt="Large" />
+          <img width={700} height={500} src={this.props.largeImageURL} alt="" />
         </div>
       </div>
     );
   }
 }
-
 export default Modal;

@@ -53,3 +53,10 @@ body {
   background-color: rgb(242, 239, 234);
   text-align: center;
 }
+
+.main-container {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 16px;
+  padding-bottom: 24px;
+}

@@ -7,77 +7,96 @@ import Button from './Button/Button';
 import Modal from './Modal/Modal';
 
 const LIMIT = 12;
+
 class App extends Component {
   state = {
     images: [],
     query: '',
     page: 1,
-    showLoadMore: false,
+    largeImageURL: '',
     isLoading: false,
     showModal: false,
+    loadMore: false,
+    isEmpty: false,
   };
 
   componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-    if (page !== prevState.page || query !== prevState.query) {
+    if (
+      this.state.page !== prevState.page ||
+      this.state.query !== prevState.query
+    ) {
       this.fetchImages();
     }
   }
 
+  handelSubmit = query => {
+    if (query === this.state.query) {
+      alert('Enter a new value to search for');
+      return;
+    }
+    this.setState({
+      query,
+      images: [],
+      page: 1,
+      largeImageURL: '',
+      isLoading: false,
+      showModal: false,
+      loadMore: false,
+    });
+  };
+
   fetchImages = async () => {
     const { query, page } = this.state;
-
     try {
       this.setState({ isLoading: true });
       const data = await getImagesApi(query, page, LIMIT);
-      this.setState(prevState => ({
-        images: page === 1 ? data.hits : [...prevState.images, ...data.hits],
-        showLoadMore: page < Math.ceil(data.totalHits / LIMIT),
+      const { hits: newImages } = data;
+      this.setState(prev => ({
+        images: [...prev.images, ...newImages],
+        loadMore: page < Math.ceil(data.totalHits / LIMIT),
+        isEmpty: newImages.length === 0 && prev.images.length === 0,
       }));
-    } catch (error) {
+    } catch (err) {
       alert('Oops, something went wrong');
     } finally {
       this.setState({ isLoading: false });
     }
   };
 
-  handleSearchSubmit = query => {
-    this.setState({
-      query,
-      images: [],
-      page: 1,
-      showLoadMore: false,
-      showModal: false,
-      largeImageURL: '',
-    });
+  handelImageClick = largeImageURL => {
+    this.setState({ largeImageURL, showModal: true });
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
-
-  handleImageClick = ({ largeImageURL }) => {
-    this.setState({ showModal: true, largeImageURL });
-  };
-
-  handleCloseModal = () => {
+  closeModalImage = () => {
     this.setState({ showModal: false, largeImageURL: '' });
+  };
+  handleLoadMore = () => {
+    this.setState(prev => ({ page: prev.page + 1 }));
   };
 
   render() {
-    const { images, isLoading, showModal, showLoadMore, largeImageURL } =
+    const { images, largeImageURL, isLoading, showModal, loadMore, isEmpty } =
       this.state;
-
     return (
-      <div>
-        <Searchbar handleSubmit={this.handleSearchSubmit} />
+      <div className="main-container">
+        <Searchbar submit={this.handelSubmit} />
         {images.length > 0 && (
-          <ImageGallery images={images} onImageClick={this.handleImageClick} />
+          <ImageGallery
+            images={images}
+            handelImageClick={this.handelImageClick}
+          />
         )}
+        {isEmpty && (
+          <h2>
+            Sorry, there are no images matching your search query. Please try
+            again.
+          </h2>
+        )}
+
+        {loadMore && <Button onClick={this.handleLoadMore} />}
         {isLoading && <Loader />}
-        {showLoadMore && <Button loadClick={this.handleLoadMore} />}
-        {showModal && (
-          <Modal img={largeImageURL} onClose={this.handleCloseModal} />
+        {showModal && this.state.largeImageURL && (
+          <Modal largeImageURL={largeImageURL} onClose={this.closeModalImage} />
         )}
       </div>
     );

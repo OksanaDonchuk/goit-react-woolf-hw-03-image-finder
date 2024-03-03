@@ -2,13 +2,20 @@ import css from './ImageGalleryItem.module.css';
 
 const ImageGalleryItem = ({
   webformatURL,
-  tags,
   largeImageURL,
-  onClickImage,
-}) => (
-  <li className={css.gallery_item} onClick={() => onClickImage(largeImageURL)}>
-    <img src={webformatURL} alt={tags} className={css.gallery_image} />
-  </li>
-);
-
+  handelImageClick,
+}) => {
+  return (
+    <li className={css.gallery_item}>
+      <img
+        onClick={() => {
+          handelImageClick(largeImageURL);
+        }}
+        className={css.galleryItem_image}
+        src={webformatURL}
+        alt=""
+      />
+    </li>
+  );
+};
 export default ImageGalleryItem;
